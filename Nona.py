@@ -15,38 +15,37 @@ headers = {
     'sec-fetch-user': '?1',
     'sec-fetch-dest': 'document',
     'accept-language': 'en-US,en;q=0.9',
-   
-}
-
-
-
-
+   }
 def downloader(url):
-    print(url)
+    
     r = requests.get(url)
     c = r.content
     soup = bs(c,"html.parser")
     
     chapnum = url.split(".")[-2].split("-")[-1]
-    
-    os.mkdir(chapnum)
-    os.chdir(os.getcwd()+"/"+chapnum)
-    images = soup.find_all("img",{"class":"chapter-img"})
-    print(len(images))
-    x = 1
-    for image in images:
-        cprint(images.index(image)+1,"magenta")
-        imgurl = image["data-original"]
-        ext = imgurl.split(".")[-1]
+    if chapnum in os.listdir():
+        print("This Chapter Already exists")
         
-        pagename = str(x) + "." + ext
-        print(pagename)
-        r = requests.get(imgurl, stream = True , headers=headers)
-        # Check if the image was retrieved successfully
-        r.raw.decode_content = True
-        with open(pagename,'wb') as f:
-            shutil.copyfileobj(r.raw, f)
-        x+=1       
+
+    else:
+        os.mkdir(chapnum)
+        os.chdir(os.getcwd()+"/"+chapnum)
+        images = soup.find_all("img",{"class":"chapter-img"})
+        x = 1
+        for image in images:
+            cprint(images.index(image)+1,"magenta")
+            imgurl = image["data-original"]
+            ext = imgurl.split(".")[-1]
+        
+            pagename = str(x) + "." + ext
+            print(pagename)
+            r = requests.get(imgurl, stream = True , headers=headers)
+            # Check if the image was retrieved successfully
+            r.raw.decode_content = True
+            with open(pagename,'wb') as f:
+                shutil.copyfileobj(r.raw, f)
+            x+=1       
+        
 
 while appstatus == True:
 
@@ -99,15 +98,19 @@ while appstatus == True:
                     chaptersbox = nsoup.find("div",{"class":"list-wrap"})
                     chapters = chaptersbox.find_all("p")
                     chapters.reverse()
-                    cprint(str(len(chapters)) + " Chapters found...","white")
-
+                    latest = int(chapters[len(chapters)-1].find("span",{"class":"title"}).find("a")["title"].split(" ")[-1])
+                    gap =  latest - len(chapters) 
+                    cprint(str(len(chapters)) + " Chapters found... " + "From  " + str(gap) + " to " + str(latest),"white")
+                    cprint("Last Chapter is  .. " + str(latest) ,"green")
                     cprint("1 Download all   2 Download by chapter  3 Download by range  4 Back","magenta")
                     dwchoice = int(input())
                     if dwchoice == 4:
                         n2 = False
                     elif  dwchoice == 1:
-                        
-                        os.mkdir(mn)
+                        if mn in os.listdir():
+                            pass
+                        else:
+                            os.mkdir(mn)
                         x=1
                         for chapter in chapters :
                             
@@ -133,15 +136,15 @@ while appstatus == True:
 
                     elif dwchoice == 2 :
                         
-                        os.mkdir(mn)
+                        if mn in os.listdir():
+                            pass
+                        else:
+                            os.mkdir(mn)
                         os.chdir(oriDir+"/"+mn)
                         cprint("Choose one chapter","green" )
-                        choosenchap = int(input())
+                        choosenchap = int(input()) - gap
                         cl = mainurl + chapters[choosenchap-1].find("span",{"class":"title"}).find("a")["href"]
-                        print(cl)
-                        
-                        downloader(cl)
-                           
+                        downloader(cl)  
                         cprint("One Chapter Downloaded")
                         cprint("Done !! , Want another manga ?","white") 
                         cprint("1 - YES, Please","green")   
@@ -154,7 +157,10 @@ while appstatus == True:
                             cprint("GoodBye !! Have a good day","cyan")
                             appstatus = False
                     elif dwchoice == 3 :
-                        os.mkdir(mn)
+                        if mn in os.listdir():
+                            pass
+                        else:
+                            os.mkdir(mn)
                         cprint("choose first chapter","green")
                         Rfrom = int(input())
                         cprint("choose last chapter","green")
@@ -174,8 +180,9 @@ while appstatus == True:
                         cprint("2 Twice- No , Just Close","red")
                         n1 = False
                         n2 = False
-                        if int(input()) == 1:
+                        finish = input()
+                        if int(finish) == 1:
                             pass
-                        elif int(input()) == 2:
+                        elif int(finish) == 2:
                             cprint("GoodBye !! Have a good day","cyan")
                             appstatus = False        
