@@ -162,9 +162,9 @@ while appstatus == True:
                         else:
                             os.mkdir(mn)
                         cprint("choose first chapter","green")
-                        Rfrom = int(input())
+                        Rfrom = int(input()) - gap
                         cprint("choose last chapter","green")
-                        Rto = int(input())
+                        Rto = int(input()) - gap
                         x=1
                         for i in range (Rfrom, Rto+1):
                             os.chdir(oriDir+"/"+mn)
